@@ -6,11 +6,10 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=pyodbc
 PKG_VERSION:=4.0.17
-PKG_RELEASE:=1
+PKG_RELEASE:=5
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://pypi.python.org/packages/ce/57/6b92aa5b3497dde6be55fd6fcb76c7db215ed1d56fde45c613add4a43095/
-PKG_MD5SUM:=1560f9c915780237c525b765537d220f
 PKG_HASH:=a82892ba8d74318524efaaccaf8351d3a3b4079a07e1a758902a2b9e84529c9d
 PKG_BUILD_DEPENDS:=python python3 unixodbc
 PKG_LICENSE:=MIT
@@ -29,19 +28,22 @@ define Package/python-pyodbc/Default
   CATEGORY:=Languages
   SUBMENU:=Python
   URL:=https://github.com/mkleehammer/pyodbc
+  DEPENDS:=+unixodbc +libstdcpp
 endef
 
 define Package/python-pyodbc
 $(call Package/python-pyodbc/Default)
   TITLE:=python-pyodbc
-  DEPENDS:=+unixodbc +libstdcpp +python-light
+  DEPENDS+=+PACKAGE_python-pyodbc:python-light \
+           +PACKAGE_python-pyodbc:python-logging \
+           +PACKAGE_python-pyodbc:python-openssl
   VARIANT:=python
 endef
 
 define Package/python3-pyodbc
 $(call Package/python-pyodbc/Default)
   TITLE:=python3-pyodbc
-  DEPENDS:=+unixodbc +libstdcpp +python3-light
+  DEPENDS+=+PACKAGE_python3-pyodbc:python3-light
   VARIANT:=python3
 endef
 
