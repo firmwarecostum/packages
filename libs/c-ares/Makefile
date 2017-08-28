@@ -14,7 +14,7 @@ PKG_RELEASE:=1
 PKG_LICENSE:=MIT
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
-PKG_SOURCE_URL:=http://c-ares.haxx.se/download
+PKG_SOURCE_URL:=https://c-ares.haxx.se/download
 PKG_HASH:=03f708f1b14a26ab26c38abd51137640cb444d3ec72380b21b20f1a8d2861da7
 
 PKG_FIXUP:=autoreconf
