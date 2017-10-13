@@ -1,6 +1,4 @@
 #
-
-lock
 noauth
 debug
 dump
@@ -11,3 +9,14 @@ novj
 novjccomp
 nopcomp
 noaccomp
+mtu 1400
+mru 1400
+require-mschap
+require-mschap-v2
+lcp-echo-interval 10
+lcp-echo-failure 5
+idle 1800
+connect-delay 5000
+nodefaultroute
+noipdefault
+proxyarp
