@@ -20,6 +20,7 @@ PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
 PKG_SOURCE_VERSION:=090d1bef577cabdb3495d76acd814733fa66ef57
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_MIRROR_HASH:=bcddc10e28a74dec607e67cbbea97220f6bfd696b0378a7c30ec8a3e0ac86be1
+PKG_BUILD_DEPENDS:=libpcap
 
 PKG_INSTALL:=1
 
@@ -39,9 +40,6 @@ l2tpd is the open source implementation of the L2TP tunneling protocol (RFC2661)
 It does implement both LAC and LNS role in a L2TP networking architecture. The
 main goal of this protocol is to tunnel PPP frame trough an IP network.
 endef
-
-# Use optimization options from OpenWrt build system
-MAKE_FLAGS += OFLAGS=""
 
 ifneq (0,0)
   # debugging options from Makefile of xl2tpd package
