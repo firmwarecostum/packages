@@ -21,6 +21,7 @@ PKG_HASH:=074093e9d7d21afedc5106904218a80a47b854abe368d2728ed22184c884893e
 PKG_FIXUP:=libtool autoreconf
 PKG_BUILD_PARALLEL:=1
 PKG_USE_MIPS16:=0
+PKG_BUILD_DEPENDS:=PACKAGE_php7-mod-imap:uw-imap
 
 PHP7_MODULES = \
 	calendar ctype curl \
@@ -30,7 +31,7 @@ PHP7_MODULES = \
 	ftp \
 	gettext gd gmp \
 	hash \
-	iconv intl \
+	iconv imap intl \
 	json \
 	ldap \
 	mbstring mcrypt mysqli \
@@ -240,6 +241,14 @@ ifneq ($(SDK)$(CONFIG_PACKAGE_php7-mod-iconv),)
   CONFIGURE_ARGS+= --with-iconv=shared,"$(ICONV_PREFIX)"
 else
   CONFIGURE_ARGS+= --without-iconv
+endif
+
+ifneq ($(SDK)$(CONFIG_PACKAGE_php7-mod-imap),)
+  CONFIGURE_ARGS+= \
+		--with-imap=shared,"$(STAGING_DIR)/usr" \
+		--with-imap-ssl
+else
+  CONFIGURE_ARGS+= --without-imap
 endif
 
 ifneq ($(SDK)$(CONFIG_PACKAGE_php7-mod-intl),)
@@ -572,6 +581,7 @@ $(eval $(call BuildModule,gettext,Gettext,+PACKAGE_php7-mod-gettext:libintl-full
 $(eval $(call BuildModule,gmp,GMP,+PACKAGE_php7-mod-gmp:libgmp))
 $(eval $(call BuildModule,hash,Hash))
 $(eval $(call BuildModule,iconv,iConv,$(ICONV_DEPENDS)))
+$(eval $(call BuildModule,imap,Imap,+PACKAGE_php7-mod-imap:libopenssl))
 $(eval $(call BuildModule,intl,Internationalization Functions,+PACKAGE_php7-mod-intl:icu))
 $(eval $(call BuildModule,json,JSON))
 $(eval $(call BuildModule,ldap,LDAP,+PACKAGE_php7-mod-ldap:libopenldap +PACKAGE_php7-mod-ldap:libsasl2))
