@@ -6,7 +6,7 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=php
-PKG_VERSION:=7.1.11
+PKG_VERSION:=7.1.12
 PKG_RELEASE:=1
 
 PKG_MAINTAINER:=Michael Heimpold <mhei@heimpold.de>
@@ -16,12 +16,11 @@ PKG_LICENSE_FILES:=LICENSE
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.xz
 PKG_SOURCE_URL:=http://www.php.net/distributions/
-PKG_HASH:=074093e9d7d21afedc5106904218a80a47b854abe368d2728ed22184c884893e
+PKG_HASH:=a0118850774571b1f2d4e30b4fe7a4b958ca66f07d07d65ebdc789c54ba6eeb3
 
 PKG_FIXUP:=libtool autoreconf
 PKG_BUILD_PARALLEL:=1
 PKG_USE_MIPS16:=0
-PKG_BUILD_DEPENDS:=PACKAGE_php7-mod-imap:uw-imap
 
 PHP7_MODULES = \
 	calendar ctype curl \
@@ -43,7 +42,7 @@ PHP7_MODULES = \
 
 PKG_CONFIG_DEPENDS:= \
 	$(patsubst %,CONFIG_PACKAGE_php7-mod-%,$(PHP7_MODULES)) \
-	CONFIG_PHP7_FILTER CONFIG_PHP7_LIBXML CONFIG_PHP7_SYSTEMTZDATA
+	CONFIG_PHP7_FILTER CONFIG_PHP7_LIBXML CONFIG_PHP7_SYSTEMTZDATA CONFIG_PHP7_LIBFREETYPE
 
 include $(INCLUDE_DIR)/package.mk
 include $(INCLUDE_DIR)/nls.mk
@@ -143,6 +142,13 @@ define Package/php7-fpm/description
   This package contains the FastCGI Process Manager of the PHP7 interpreter.
 endef
 
+define Package/php7-mod-gd/config
+  config PHP7_LIBFREETYPE
+	bool "Enable Freetype 2 support in php7-mod-gd"
+	depends on PACKAGE_php7-mod-gd
+	default y
+endef
+
 # not everything groks --disable-nls
 DISABLE_NLS:=
 
@@ -215,7 +221,6 @@ endif
 ifneq ($(SDK)$(CONFIG_PACKAGE_php7-mod-gd),)
   CONFIGURE_ARGS+= \
 	--with-gd=shared \
-	--without-freetype-dir \
 	--with-jpeg-dir="$(STAGING_DIR)/usr" \
 	--with-png-dir="$(STAGING_DIR)/usr" \
 	--without-xpm-dir \
@@ -223,6 +228,11 @@ ifneq ($(SDK)$(CONFIG_PACKAGE_php7-mod-gd),)
 	--disable-gd-jis-conv
 else
   CONFIGURE_ARGS+= --without-gd
+endif
+ifneq ($(CONFIG_PHP7_LIBFREETYPE),)
+  CONFIGURE_ARGS+= --with-freetype-dir="$(STAGING_DIR)"
+else
+  CONFIGURE_ARGS+= --without-freetype-dir
 endif
 
 ifneq ($(SDK)$(CONFIG_PACKAGE_php7-mod-gmp),)
@@ -452,20 +462,22 @@ else
   CONFIGURE_ARGS+= --disable-libxml
 endif
 
-#ifneq ($(CONFIG_PHP7_SYSTEMTZDATA),)
-#  CONFIGURE_ARGS+= --with-system-tzdata
-#else
-#  CONFIGURE_ARGS+= --without-system-tzdata
-#endif
+ifneq ($(CONFIG_PHP7_SYSTEMTZDATA),)
+  CONFIGURE_ARGS+= --with-system-tzdata
+else
+  CONFIGURE_ARGS+= --without-system-tzdata
+endif
 
 CONFIGURE_VARS+= \
 	ac_cv_c_bigendian_php=$(if $(CONFIG_BIG_ENDIAN),yes,no) \
 	php_cv_cc_rpath="no" \
 	iconv_impl_name="gnu_libiconv" \
 	ac_cv_php_xml2_config_path="$(STAGING_DIR)/host/bin/xml2-config" \
+	ac_cv_u8t_decompose=yes \
 
 define Package/php7/conffiles
 /etc/php.ini
+/etc/php7/
 endef
 
 define Package/php7/install
@@ -507,6 +519,12 @@ define Package/php7-fpm/install
 
 	$(INSTALL_DIR) $(1)/etc/init.d
 	$(INSTALL_BIN) ./files/php7-fpm.init $(1)/etc/init.d/php7-fpm
+endef
+
+define Package/php7-fpm/conffiles
+/etc/php7-fpm.conf
+/etc/php7-fpm.d/
+/etc/config/php7-fpm
 endef
 
 define Build/Prepare
@@ -576,12 +594,12 @@ $(eval $(call BuildModule,dom,DOM,+@PHP7_LIBXML +PACKAGE_php7-mod-dom:libxml2))
 $(eval $(call BuildModule,exif,EXIF))
 $(eval $(call BuildModule,fileinfo,Fileinfo))
 $(eval $(call BuildModule,ftp,FTP,+PACKAGE_php7-mod-ftp:libopenssl))
-$(eval $(call BuildModule,gd,GD graphics,+PACKAGE_php7-mod-gd:libjpeg +PACKAGE_php7-mod-gd:libpng))
+$(eval $(call BuildModule,gd,GD graphics,+PACKAGE_php7-mod-gd:libjpeg +PACKAGE_php7-mod-gd:libpng +PHP7_LIBFREETYPE:libfreetype))
 $(eval $(call BuildModule,gettext,Gettext,+PACKAGE_php7-mod-gettext:libintl-full))
 $(eval $(call BuildModule,gmp,GMP,+PACKAGE_php7-mod-gmp:libgmp))
 $(eval $(call BuildModule,hash,Hash))
 $(eval $(call BuildModule,iconv,iConv,$(ICONV_DEPENDS)))
-$(eval $(call BuildModule,imap,Imap,+PACKAGE_php7-mod-imap:libopenssl))
+$(eval $(call BuildModule,imap,IMAP,+PACKAGE_php7-mod-imap:libopenssl +PACKAGE_php7-mod-imap:uw-imap))
 $(eval $(call BuildModule,intl,Internationalization Functions,+PACKAGE_php7-mod-intl:icu))
 $(eval $(call BuildModule,json,JSON))
 $(eval $(call BuildModule,ldap,LDAP,+PACKAGE_php7-mod-ldap:libopenldap +PACKAGE_php7-mod-ldap:libsasl2))
