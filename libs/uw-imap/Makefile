@@ -57,7 +57,9 @@ define Build/InstallDev
 			$(1)/usr/include
 	$(CP) $(PKG_BUILD_DIR)/c-client/libc-client.so.$(PKG_VERSION) $(1)/usr/lib/
 	$(LN) libc-client.so.$(PKG_VERSION) $(1)/usr/lib/libc-client.so
-	$(CP) $(PKG_BUILD_DIR)/c-client/*.h $(1)/usr/include/
+	$(CP) $(PKG_BUILD_DIR)/c-client/linkage.h $(1)/usr/include/
+	$(CP) $(PKG_BUILD_DIR)/src/c-client/*.h $(1)/usr/include/
+	$(CP) $(PKG_BUILD_DIR)/src/osdep/unix/*.h $(1)/usr/include/
 endef
 
 define Package/uw-imap/install
