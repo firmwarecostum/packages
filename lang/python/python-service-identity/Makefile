@@ -15,14 +15,12 @@ PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://pypi.python.org/packages/source/s/service_identity
 PKG_HASH:=0630e222f59f91f3db498be46b1d879ff220955d7bbad719a5cb9ad14e3c3036
 
-PKG_BUILD_DEPENDS:=python python-setuptools
-
 PKG_LICENSE:=MIT
 PKG_LICENSE_FILES:=LICENSE
 PKG_MAINTAINER:=Jeffery To <jeffery.to@gmail.com>
 
 include $(INCLUDE_DIR)/package.mk
-$(call include_mk, python-package.mk)
+include ../python-package.mk
 
 define Package/python-service-identity
 	SECTION:=lang
