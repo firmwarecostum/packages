@@ -4,17 +4,18 @@
 #
 include $(TOPDIR)/rules.mk
 
+
 PKG_NAME:=kadnode
-PKG_VERSION:=2.0.2
+PKG_VERSION:=2.2.0
 PKG_RELEASE:=1
 
-PKG_SOURCE_PROTO:=git
-PKG_SOURCE_URL:=git://github.com/mwarning/KadNode.git
-PKG_SOURCE_VERSION:=26dbc9436f8d2c68b899cd32e01bdbe1565294b2
 
-PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
-PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
-PKG_MIRROR_HASH:=67ba2ce03c3dd74b547885891391657aa9d6fae7c14558634776e1111e7cbe57
+PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)-$(PKG_VERSION)
+PKG_SOURCE_PROTO:=git
+PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.xz
+PKG_SOURCE_URL:=https://github.com/mwarning/KadNode
+PKG_SOURCE_VERSION:=c63e734950787d35c8bf1363448430942d1bb39d
+PKG_MIRROR_HASH:=dcecfb14169ac5c4c28bcf147681f6823aa2d8a37d29d35ab3e76b613cce085c
 PKG_LICENSE:=MIT
 
 PKG_BUILD_PARALLEL:=1
@@ -80,7 +81,7 @@ define Package/kadnode/install
 	$(INSTALL_DIR) $(1)/usr/bin
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/build/kadnode $(1)/usr/bin/
 ifeq ($(CONFIG_KADNODE_ENABLE_CMD),y)
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/build/kadnode-ctl $(1)/usr/bin/
+	$(LN) /usr/bin/kadnode $(1)/usr/bin/kadnode-ctl
 endif
 	$(INSTALL_DIR) $(1)/etc/init.d
 	$(INSTALL_BIN) files/kadnode.init $(1)/etc/init.d/kadnode

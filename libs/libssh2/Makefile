@@ -9,7 +9,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=libssh2
 PKG_VERSION:=1.8.0
-PKG_RELEASE:=1
+PKG_RELEASE:=2
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://www.libssh2.org/download
@@ -22,6 +22,10 @@ PKG_INSTALL:=1
 PKG_LICENSE:=BSD
 PKG_LICENSE_FILES:=COPYING
 
+PKG_CONFIG_DEPENDS:= \
+	CONFIG_LIBSSH2_MBEDTLS \
+	CONFIG_LIBSSH2_OPENSSL
+
 include $(INCLUDE_DIR)/package.mk
 
 define Package/libssh2
@@ -29,7 +33,7 @@ define Package/libssh2
   CATEGORY:=Libraries
   TITLE:=SSH2 library
   URL:=https://www.libssh2.org/
-  DEPENDS:=+libmbedtls +zlib
+  DEPENDS:=+LIBSSH2_MBEDTLS:libmbedtls +LIBSSH2_OPENSSL:libopenssl +zlib
   MAINTAINER:=Jiri Slachta <jiri@slachta.eu>
 endef
 
@@ -37,22 +41,24 @@ define Package/libssh2/description
  libssh2 is a client-side C library implementing the SSH2 protocol.
 endef
 
-TARGET_CFLAGS += $(FPIC)
+define Package/libssh2/config
+	source "$(SOURCE)/Config.in"
+endef
 
 CONFIGURE_ARGS += \
 	--disable-examples-build \
 	--disable-silent-rules \
-	--with-mbedtls \
-	--with-libmbedtls-prefix=$(STAGING_DIR)/usr \
+	$(if $(CONFIG_LIBSSH2_MBEDTLS),--with-mbedtls --with-libmbedtls-prefix=$(STAGING_DIR)/usr) \
+	$(if $(CONFIG_LIBSSH2_OPENSSL),--with-openssl --with-libssl-prefix=$(STAGING_DIR)/usr) \
 	--with-libz-prefix=$(STAGING_DIR)/usr
 
 define Build/InstallDev
 	$(INSTALL_DIR) $(1)/usr/include
 	$(INSTALL_DIR) $(1)/usr/lib
 	$(INSTALL_DIR) $(1)/usr/lib/pkgconfig
-	$(CP) $(PKG_INSTALL_DIR)/usr/include/*.h $(1)/usr/include/
+	$(INSTALL_DATA) $(PKG_INSTALL_DIR)/usr/include/*.h $(1)/usr/include/
 	$(CP) $(PKG_INSTALL_DIR)/usr/lib/libssh2.so* $(1)/usr/lib/
-	$(CP) $(PKG_INSTALL_DIR)/usr/lib/pkgconfig/libssh2.pc $(1)/usr/lib/pkgconfig/
+	$(INSTALL_DATA) $(PKG_INSTALL_DIR)/usr/lib/pkgconfig/libssh2.pc $(1)/usr/lib/pkgconfig/
 endef
 
 define Package/libssh2/install
