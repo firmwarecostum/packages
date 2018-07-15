@@ -9,7 +9,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=mariadb
 PKG_VERSION:=10.2.16
-PKG_RELEASE:=1
+PKG_RELEASE:=3
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL := \
@@ -34,12 +34,6 @@ PKG_BUILD_DEPENDS:=libevent2 mariadb/host
 CMAKE_INSTALL:=1
 
 PLUGIN_DIR:=/usr/lib/mysql/plugin
-
-MARIADB_COMMON_DEPENDS := \
-	+libatomic \
-	+libopenssl \
-	+libstdcpp \
-	+zlib
 
 MARIADB_SERVER_PLUGINS := \
 	adt_null \
@@ -173,6 +167,18 @@ MARIADB_SERVER_EXTRA := \
 include $(INCLUDE_DIR)/package.mk
 include $(INCLUDE_DIR)/host-build.mk
 include $(INCLUDE_DIR)/cmake.mk
+include $(INCLUDE_DIR)/nls.mk
+
+MARIADB_COMMON_DEPENDS := \
+	$(ICONV_DEPENDS) \
+	+libatomic \
+	+libopenssl \
+	+libstdcpp \
+	+zlib
+
+# Pass CPPFLAGS in the CFLAGS as otherwise the build system will
+# ignore them.
+TARGET_CFLAGS+=$(TARGET_CPPFLAGS)
 
 define Package/mariadb/install/bin
 	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/bin/$(2) $(1)/usr/bin
@@ -380,6 +386,14 @@ CMAKE_OPTIONS += \
 	-DPLUGIN_AUTH_GSSAPI_CLIENT=NO \
 	-DPLUGIN_CRACKLIB_PASSWORD_CHECK=NO
 
+# Help MariaDB find the correct libiconv.
+# nls.mk sets it up so that with CONFIG_BUILD_NLS libiconv-full would be used,
+# otherwise libiconv-stub (independent of the selected libc). MariaDB needs a
+# leg up to find/pick the right lib.
+CMAKE_OPTIONS += \
+	-DICONV_INCLUDE_DIR=$(ICONV_PREFIX)/include \
+	-DICONV_LIBRARIES=$(ICONV_PREFIX)/lib/libiconv.$(if $(CONFIG_BUILD_NLS),so,a)
+
 CMAKE_OPTIONS += \
 	$(foreach p,$(MARIADB_SERVER_PLUGINS),-D$(plugin-$(p))=$(if $(CONFIG_PACKAGE_$(PKG_NAME)-server-plugin-$(subst _,-,$(p))),DYNAMIC,NO))
 
@@ -420,6 +434,19 @@ define Host/Install
 	$(INSTALL_BIN) $(HOST_BUILD_DIR)/scripts/comp_sql $(1)/share/mariadb/scripts
 	$(INSTALL_BIN) $(HOST_BUILD_DIR)/sql/{gen_lex_hash,gen_lex_token} $(1)/share/mariadb/sql
 	$(INSTALL_DATA) $(HOST_BUILD_DIR)/import_executables.cmake $(1)/share/mariadb
+endef
+
+# LIBICONV_PLUG is used in GNU's libiconv for redefinition of exports [e.g.
+# from libiconv_open() to iconv_open()]. But in OpenWrt this variable is not set
+# when building libiconv-full. So when mariadb sets LIBICONV_PLUG it expects
+# iconv_open() to be available for example, which is not the case - only
+# libiconv_open() is. To address this prevent the variable from being set.
+# libiconv-stub does not use this variable, so there is no harm in always doing
+# this.
+
+define Build/Prepare
+	$(call Build/Prepare/Default)
+	$(SED) '/ADD_DEFINITIONS(-DLIBICONV_PLUG)/d' $(PKG_BUILD_DIR)/libmariadb/libmariadb/CMakeLists.txt
 endef
 
 define Build/InstallDev
