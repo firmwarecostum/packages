@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=dovecot
-PKG_VERSION:=2.3.2
+PKG_VERSION:=2.3.2.1
 PKG_RELEASE:=2
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://www.dovecot.org/releases/2.3
-PKG_HASH:=6e48f0fa60768427f03035b0a3e93d1ae29b972bb2bd9ca998ccc6a0f6dae393
+PKG_HASH:=4a65118508dc7a562e5f90dd7c3f56219fff22367c496f17d77cd0c7e2724e34
 PKG_LICENSE:=LGPL-2.1 MIT BSD-3-Clause Unique
 PKG_LICENSE_FILES:=COPYING COPYING.LGPL COPYING.MIT
 PKG_MAINTAINER:=Lucian Cristian <lucian.cristian@gmail.com>
@@ -98,8 +98,8 @@ define Package/dovecot-utils
 endef
 
 CONFIGURE_ARGS += \
+	--libexecdir=/usr/libexec \
 	--without-pam \
-	--with-moduledir=/usr/lib/dovecot/modules \
 	--with-notify=dnotify \
 	--without-lzma \
 	--without-lz4 \
@@ -137,10 +137,12 @@ define Package/dovecot/install
 			$(1)/etc/dovecot \
 			$(1)/usr/share/doc/dovecot \
 			$(1)/usr/lib/dovecot \
+			$(1)/usr/libexec/dovecot \
 			$(1)/usr/bin \
 			$(1)/usr/sbin
 	$(CP) $(PKG_INSTALL_DIR)/etc/dovecot/* $(1)/etc/dovecot/
 	$(CP) $(PKG_INSTALL_DIR)/usr/lib/dovecot/* $(1)/usr/lib/dovecot/
+	$(CP) $(PKG_INSTALL_DIR)/usr/libexec/dovecot/* $(1)/usr/libexec/dovecot/
 	$(CP) $(PKG_INSTALL_DIR)/usr/share/doc/dovecot/example-config $(1)/usr/share/doc/dovecot/
 	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/bin/doveconf $(1)/usr/bin/
 	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/sbin/* $(1)/usr/sbin/
