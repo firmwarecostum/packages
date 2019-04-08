@@ -30,6 +30,7 @@ define Package/libpcre/default
   SECTION:=libs
   CATEGORY:=Libraries
   URL:=https://www.pcre.org/
+  DEPENDS:=$(CXX_DEPENDS)
 endef
 
 define Package/libpcre
@@ -45,7 +46,7 @@ endef
 define Package/libpcrecpp
   $(call Package/libpcre/default)
   TITLE:=C++ wrapper for Perl Compatible Regular Expression library
-  DEPENDS:=+libpcre $(CXX_DEPENDS)
+  DEPENDS:=+libpcre
 endef
 
 TARGET_CFLAGS += $(FPIC)
@@ -55,12 +56,8 @@ CONFIGURE_ARGS += \
 	--enable-unicode-properties \
 	--enable-pcre16 \
 	--with-match-limit-recursion=16000 \
+	--enable-cpp
 
-ifneq ($(CONFIG_PACKAGE_libpcrecpp),)
-  CONFIGURE_ARGS+= --enable-cpp
-else
-  CONFIGURE_ARGS+= --disable-cpp
-endif
 
 MAKE_FLAGS += \
 	CFLAGS="$(TARGET_CFLAGS)"
