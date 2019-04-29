@@ -3,23 +3,24 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=samba
 PKG_VERSION:=4.9.6
-PKG_RELEASE:=1
+PKG_RELEASE:=2
 
 PKG_MAINTAINER:=Andy Walsh <andy.walsh44+github@gmail.com>
 PKG_LICENSE:=GPL-3.0-only
 PKG_LICENSE_FILES:=COPYING
 
-PKG_SOURCE_URL:=https://fossies.org/linux/misc/ \
-				ftp://mirrors.dotsrc.org/samba/ \
-				https://ftp.gwdg.de/pub/samba/stable/ \
-				https://ftp.yz.yamagata-u.ac.jp/pub/network/samba/ \
-				http://ftp.uni-bayreuth.de/netsoftware/samba/ \
-				https://www.samba.org/ftp/samba/stable/
+PKG_SOURCE_URL:=https://ftp.heanet.ie/mirrors/ftp.samba.org/stable/ \
+		https://ftp.gwdg.de/pub/samba/stable/ \
+		https://ftp.riken.jp/net/samba/samba/stable/ \
+		http://www.nic.funet.fi/index/samba/pub/samba/stable/ \
+		http://samba.mirror.bit.nl/samba/ftp/stable/ \
+		https://download.samba.org/pub/samba/stable/
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_HASH:=c9205a651a83d69e200fec9dd65e9fa360f0c75ab3275b3dcb74e5cbaec60807
 
 # samba4=(asn1_compile) e2fsprogs=(compile_et) nfs-kernel-server=(rpcgen)
-PKG_BUILD_DEPENDS:=samba4/host e2fsprogs/host nfs-kernel-server/host 
+HOST_BUILD_DEPENDS:=nfs-kernel-server/host e2fsprogs/host
+PKG_BUILD_DEPENDS:=samba4/host
 
 PKG_CONFIG_DEPENDS:= \
 	CONFIG_SAMBA4_SERVER_NETBIOS \
