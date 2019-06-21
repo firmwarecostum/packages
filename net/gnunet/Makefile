@@ -2,11 +2,11 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=gnunet
 
-PKG_VERSION:=0.11.4
-PKG_RELEASE:=1
+PKG_VERSION:=0.11.5
+PKG_RELEASE:=2
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=@GNU/gnunet
-PKG_HASH:=7afeb638bd8b5a33c6b8dab24b90c5d7467439adc79794ff33218e9180f8b01b
+PKG_HASH:=98e0355ff0627bf88112b3b92a7522e98c0ae6071fc45efda5a33daed28199b3
 
 PKG_LICENSE:=AGPL-3.0
 PKG_LICENSE_FILES:=COPYING
@@ -99,7 +99,7 @@ define BuildComponent
 	( if [ "$(PLUGIN_$(1))" ]; then \
 		$(INSTALL_DIR) $$(1)/usr/lib/gnunet ; \
 		for plug in $(PLUGIN_$(1)); do \
-			$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/lib/gnunet/libgnunet_plugin_$$$$$$$$plug*.so $$(1)/usr/lib/gnunet ; \
+			$(CP) $(PKG_INSTALL_DIR)/usr/lib/gnunet/libgnunet_plugin_$$$$$$$$plug*.so $$(1)/usr/lib/gnunet ; \
 		done \
 	fi )
 
@@ -144,7 +144,7 @@ define Package/gnunet/install
 	done )
 
 	( for plug in ats_proportional ats2_simple block_dht block_regex block_revocation transport_unix; do \
-		$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/lib/gnunet/libgnunet_plugin_$$$$plug*.so $(1)/usr/lib/gnunet ; \
+		$(CP) $(PKG_INSTALL_DIR)/usr/lib/gnunet/libgnunet_plugin_$$$$plug*.so $(1)/usr/lib/gnunet ; \
 	done )
 
 	( for lex in daemon-topology helper-nat-client \
