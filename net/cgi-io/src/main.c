@@ -37,6 +37,7 @@
 
 #include "multipart_parser.h"
 
+#define READ_BLOCK 4096
 
 enum part {
 	PART_UNKNOWN,
@@ -125,6 +126,7 @@ static char *
 checksum(const char *applet, size_t sumlen, const char *file)
 {
 	pid_t pid;
+	int r;
 	int fds[2];
 	static char chksum[65];
 
@@ -153,10 +155,14 @@ checksum(const char *applet, size_t sumlen, const char *file)
 
 	default:
 		memset(chksum, 0, sizeof(chksum));
-		read(fds[0], chksum, sumlen);
+		r = read(fds[0], chksum, sumlen);
+
 		waitpid(pid, NULL, 0);
 		close(fds[0]);
 		close(fds[1]);
+
+		if (r < 0)
+			return NULL;
 	}
 
 	return chksum;
@@ -389,7 +395,7 @@ static int
 filecopy(void)
 {
 	int len;
-	char buf[4096];
+	char buf[READ_BLOCK];
 
 	if (!st.filedata)
 	{
@@ -441,7 +447,7 @@ header_field(multipart_parser *p, const char *data, size_t len)
 static int
 header_value(multipart_parser *p, const char *data, size_t len)
 {
-	int i, j;
+	size_t i, j;
 
 	if (!st.is_content_disposition)
 		return 0;
@@ -499,6 +505,8 @@ data_begin_cb(multipart_parser *p)
 static int
 data_cb(multipart_parser *p, const char *data, size_t len)
 {
+	int wlen = len;
+
 	switch (st.parttype)
 	{
 	case PART_SESSIONID:
@@ -514,14 +522,14 @@ data_cb(multipart_parser *p, const char *data, size_t len)
 		break;
 
 	case PART_FILEDATA:
-		if (write(st.tempfd, data, len) != len)
+		if (write(st.tempfd, data, len) != wlen)
 		{
 			close(st.tempfd);
 			return response(false, "I/O failure while writing temporary file");
 		}
 
 		if (!st.filedata)
-			st.filedata = !!len;
+			st.filedata = !!wlen;
 
 		break;
 
@@ -625,7 +633,8 @@ static int
 main_upload(int argc, char *argv[])
 {
 	int rem, len;
-	char buf[4096];
+	bool done = false;
+	char buf[READ_BLOCK];
 	multipart_parser *p;
 
 	p = init_parser();
@@ -638,16 +647,13 @@ main_upload(int argc, char *argv[])
 
 	while ((len = read(0, buf, sizeof(buf))) > 0)
 	{
-		rem = multipart_parser_execute(p, buf, len);
-
-		if (rem < len)
-			break;
+		if (!done) {
+			rem = multipart_parser_execute(p, buf, len);
+			done = (rem < len);
+		}
 	}
 
 	multipart_parser_free(p);
-
-	/* read remaining post data */
-	while ((len = read(0, buf, sizeof(buf))) > 0);
 
 	return 0;
 }
@@ -657,7 +663,7 @@ main_download(int argc, char **argv)
 {
 	char *fields[] = { "sessionid", NULL, "path", NULL, "filename", NULL, "mimetype", NULL };
 	unsigned long long size = 0;
-	char *p, buf[4096];
+	char *p, buf[READ_BLOCK];
 	ssize_t len = 0;
 	struct stat s;
 	int rfd;
@@ -677,7 +683,7 @@ main_download(int argc, char **argv)
 		return failure(403, 0, "Requested path is not a regular file or block device");
 
 	for (p = fields[5]; p && *p; p++)
-		if (!isalnum(*p) && !strchr(" ()<>@,;:[]?.=%", *p))
+		if (!isalnum(*p) && !strchr(" ()<>@,;:[]?.=%-", *p))
 			return failure(400, 0, "Invalid characters in filename");
 
 	for (p = fields[7]; p && *p; p++)
@@ -735,6 +741,7 @@ main_backup(int argc, char **argv)
 {
 	pid_t pid;
 	time_t now;
+	int r;
 	int len;
 	int status;
 	int fds[2];
@@ -761,7 +768,9 @@ main_backup(int argc, char **argv)
 		close(fds[0]);
 		close(fds[1]);
 
-		chdir("/");
+		r = chdir("/");
+		if (r < 0)
+			return failure(500, errno, "Failed chdir('/')");
 
 		execl("/sbin/sysupgrade", "/sbin/sysupgrade",
 		      "--create-backup", "-", NULL);
@@ -783,7 +792,7 @@ main_backup(int argc, char **argv)
 		fflush(stdout);
 
 		do {
-			len = splice(fds[0], NULL, 1, NULL, 4096, SPLICE_F_MORE);
+			len = splice(fds[0], NULL, 1, NULL, READ_BLOCK, SPLICE_F_MORE);
 		} while (len > 0);
 
 		waitpid(pid, &status, 0);
