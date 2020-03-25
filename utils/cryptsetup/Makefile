@@ -8,25 +8,29 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=cryptsetup
-PKG_VERSION:=2.2.2
-PKG_RELEASE:=1
+PKG_VERSION:=2.3.0
+PKG_RELEASE:=2
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.xz
-PKG_SOURCE_URL:=@KERNEL/linux/utils/cryptsetup/v2.2
-PKG_HASH:=2af0ec9551ab9c870074cae9d3f68d82cab004f4095fa89db0e4413713424a46
+PKG_SOURCE_URL:=@KERNEL/linux/utils/cryptsetup/v2.3
+PKG_HASH:=395690de99509428354d3cd15cf023bed01487e6f1565b2181e013dc847bbc85
 
 PKG_MAINTAINER:=Daniel Golle <daniel@makrotopia.org>
 PKG_LICENSE:=GPL-2.0-or-later LGPL-2.1-or-later
 PKG_LICENSE_FILES:=COPYING COPYING.LGPL
 
+PKG_INSTALL:=1
+PKG_BUILD_PARALLEL:=1
+
 include $(INCLUDE_DIR)/package.mk
+include $(INCLUDE_DIR)/nls.mk
 
 define Package/cryptsetup
   SECTION:=utils
   CATEGORY:=Utilities
   SUBMENU:=Encryption
   TITLE:=Cryptsetup
-  DEPENDS:=+libblkid +libuuid +libpopt +lvm2 +libdevmapper +libjson-c +@KERNEL_DIRECT_IO +kmod-crypto-user
+  DEPENDS:=$(ICONV_DEPENDS) +libblkid +libuuid +libpopt +lvm2 +libdevmapper +libjson-c +@KERNEL_DIRECT_IO +kmod-crypto-user
   URL:=https://gitlab.com/cryptsetup/cryptsetup/
 endef
 
@@ -42,13 +46,25 @@ CONFIGURE_ARGS += \
 	--disable-veritysetup \
 	--disable-udev \
 	--with-default-luks-format=LUKS2 \
+	--with-luks2-lock-path=/var/run/cryptsetup \
 	--with-crypto_backend=kernel
 
-define Package/cryptsetup/install
-	$(INSTALL_DIR) $(1)/usr/sbin
-	$(CP) $(PKG_BUILD_DIR)/.libs/cryptsetup $(1)/usr/sbin
+TARGET_LDFLAGS += -liconv
+
+define Build/InstallDev
+	$(INSTALL_DIR) $(1)/usr/include
+	$(INSTALL_DATA) $(PKG_INSTALL_DIR)/usr/include/libcryptsetup.h $(1)/usr/include
 	$(INSTALL_DIR) $(1)/usr/lib
-	$(CP) $(PKG_BUILD_DIR)/.libs/libcryptsetup.so* $(1)/usr/lib
+	$(CP) $(PKG_INSTALL_DIR)/usr/lib/libcryptsetup.so* $(1)/usr/lib
+	$(INSTALL_DIR) $(1)/usr/lib/pkgconfig
+	$(INSTALL_DATA) $(PKG_INSTALL_DIR)/usr/lib/pkgconfig/libcryptsetup.pc $(1)/usr/lib/pkgconfig
+endef
+
+define Package/cryptsetup/install
+	$(INSTALL_DIR) $(1)/usr/lib
+	$(CP) $(PKG_INSTALL_DIR)/usr/lib/libcryptsetup.so* $(1)/usr/lib
+	$(INSTALL_DIR) $(1)/usr/sbin
+	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/sbin/cryptsetup $(1)/usr/sbin
 endef
 
 $(eval $(call BuildPackage,cryptsetup))
