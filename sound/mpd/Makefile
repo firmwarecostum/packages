@@ -7,17 +7,18 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=mpd
 PKG_VERSION:=0.21.25
-PKG_RELEASE:=1
+PKG_RELEASE:=4
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.xz
 PKG_SOURCE_URL:=https://www.musicpd.org/download/mpd/0.21/
 PKG_HASH:=20a0ad01bf327b2dbeb6ae8e1af952cb0de83d2d63fab0fa4b7183a74765c201
 
-PKG_MAINTAINER:=Ted Hess <thess@kitschensync.net>
+PKG_MAINTAINER:=
 PKG_LICENSE:=GPL-2.0-or-later
 PKG_LICENSE_FILES:=COPYING
 
 PKG_CONFIG_DEPENDS:= \
+	CONFIG_BUILD_PATENTED \
 	CONFIG_IPV6 \
 
 PKG_INSTALL:=1
@@ -32,8 +33,8 @@ define Package/mpd/Default
   CATEGORY:=Sound
   TITLE:=Music Player Daemon
   URL:=https://www.musicpd.org/
-  DEPENDS:= +zlib +libcurl +libpthread +libmpdclient +libstdcpp $(ICONV_DEPENDS) \
-	    +AUDIO_SUPPORT:alsa-lib +boost +libexpat +libflac +libid3tag +libfaad2
+  DEPENDS:= +zlib +libcurl +libpthread +libmpdclient +boost $(ICONV_DEPENDS) \
+            +AUDIO_SUPPORT:alsa-lib +libexpat +libflac +libid3tag +libfaad2 +libopus
 endef
 
 define Package/mpd/Default/description
@@ -46,7 +47,8 @@ endef
 define Package/mpd-full
 $(call Package/mpd/Default)
   TITLE+= (full)
-  DEPENDS+= +libffmpeg +libvorbis +libmms +libupnp +libshout +AUDIO_SUPPORT:pulseaudio-daemon +yajl
+  DEPENDS+= +AUDIO_SUPPORT:pulseaudio-daemon +libvorbis +libmms +libupnp +libshout +yajl \
+            +BUILD_PATENTED:libffmpeg +!BUILD_PATENTED:libmad
   PROVIDES:=mpd
   VARIANT:=full
 endef
@@ -97,14 +99,6 @@ define Package/mpd-avahi-service/conffiles
 /etc/avahi/services/mpd.service
 endef
 
-TARGET_LDFLAGS += \
-	-liconv \
-	$(if $(CONFIG_USE_GLIBC),-lpthread)
-
-ifeq ($(CONFIG_AUDIO_SUPPORT),y)
-	TARGET_LDFLAGS += -Wl,-rpath-link=$(STAGING_DIR)/usr/lib/pulseaudio
-endif
-
 MESON_ARGS += \
 	-Ddocumentation=false \
 	-Dtest=false \
@@ -113,7 +107,7 @@ MESON_ARGS += \
 	-Ddaemon=false \
 	-Dsystemd=disabled \
 	-Dtcp=true \
-	-Dipv6=$(if $(CONFIG_IPV6),enabled,disabled) \
+	-Dipv6=$(if $(CONFIG_IPV6),en,dis)abled \
 	-Dlocal_socket=true \
 	-Ddsd=false \
 	-Ddatabase=true \
@@ -143,7 +137,7 @@ MESON_ARGS += \
 	-Dmikmod=disabled \
 	-Dmodplug=disabled \
 	-Dmpcdec=disabled \
-	-Dopus=disabled \
+	-Dopus=enabled \
 	-Dsidplay=disabled \
 	-Dsndfile=disabled \
 	-Dwavpack=disabled \
@@ -172,15 +166,14 @@ MESON_ARGS += \
 	-Dzlib=enabled \
 	-Dzeroconf=disabled
 
-
 ifeq ($(BUILD_VARIANT),full)
 
   MESON_ARGS += \
 	-Dupnp=enabled \
 	-Dmms=enabled \
 	-Dsoundcloud=enabled \
-	-Dffmpeg=enabled \
-	-Dmad=disabled \
+	-Dffmpeg=$(if $(CONFIG_BUILD_PATENTED),en,dis)abled \
+	-Dmad=$(if $(CONFIG_BUILD_PATENTED),dis,en)abled \
 	-Dtremor=disabled \
 	-Dvorbis=enabled \
 	-Dfifo=true \
@@ -189,6 +182,10 @@ ifeq ($(BUILD_VARIANT),full)
 	-Drecorder=true \
 	-Dshout=enabled \
 	-Dyajl=enabled
+
+ifeq ($(CONFIG_AUDIO_SUPPORT),y)
+	TARGET_LDFLAGS += -Wl,-rpath-link=$(STAGING_DIR)/usr/lib/pulseaudio
+endif
 endif
 
 ifeq ($(BUILD_VARIANT),mini)

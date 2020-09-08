@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=unbound
-PKG_VERSION:=1.10.1
-PKG_RELEASE:=5
+PKG_VERSION:=1.11.0
+PKG_RELEASE:=4
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://nlnetlabs.nl/downloads/unbound
-PKG_HASH:=b73677c21a71cf92f15cc8cfe76a3d875e40f65b6150081c39620b286582d536
+PKG_HASH:=9f2f0798f76eb8f30feaeda7e442ceed479bc54db0e3ac19c052d68685e51ef7
 
 PKG_MAINTAINER:=Eric Luehrsen <ericluehrsen@gmail.com>
 PKG_LICENSE:=BSD-3-Clause
@@ -29,7 +29,8 @@ PKG_CONFIG_DEPENDS:=CONFIG_PACKAGE_libunbound_dnscrypt \
 	CONFIG_PACKAGE_libunbound_libevent \
 	CONFIG_PACKAGE_libunbound_libpthread \
 	CONFIG_PACKAGE_libunbound_pythonmodule \
-	CONFIG_PACKAGE_libunbound_subnet
+	CONFIG_PACKAGE_libunbound_subnet \
+	CONFIG_PACKAGE_libunbound_dnstap
 
 include $(INCLUDE_DIR)/package.mk
 
@@ -66,7 +67,8 @@ define Package/libunbound
     +PACKAGE_libunbound_ipset:libmnl \
     +PACKAGE_libunbound_libevent:libevent2 \
 	+PACKAGE_libunbound_libpthread:libpthread \
-	+PACKAGE_libunbound_pythonmodule:python3-base
+	+PACKAGE_libunbound_pythonmodule:python3-base \
+	+PACKAGE_libunbound_dnstap:libprotobuf-c
 endef
 
 define Package/libunbound/description
@@ -145,6 +147,9 @@ define Package/libunbound/config
 	config PACKAGE_libunbound_subnet
 		bool "Build with SUBNET cache module support."
 		default n
+	config PACKAGE_libunbound_dnstap
+		bool "Build with dnstap support."
+		default n
 	endif
 endef
 
@@ -171,6 +176,7 @@ CONFIGURE_ARGS += \
         --with-pthreads,--without-pthreads --without-solaris-threads) \
     $(if $(CONFIG_PACKAGE_libunbound_python),--with-pythonmodule,) \
     $(if $(CONFIG_PACKAGE_libunbound_subnet),--enable-subnet,) \
+    $(if $(CONFIG_PACKAGE_libunbound_dnstap),--enable-dnstap,) \
 
 define Package/unbound-daemon/conffiles
 /etc/config/unbound
