@@ -1,14 +1,14 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=xray-core
-PKG_VERSION:=1.3.0
+PKG_VERSION:=1.4.0
 PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://codeload.github.com/XTLS/Xray-core/tar.gz/v$(PKG_VERSION)?
-PKG_HASH:=1125af4411655abf47913af14a22fd7e2b13371e3566cc03676207519b0fe407
+PKG_HASH:=09fcfec0b6e9362d36fb358fe781431a6c2baae71a7864eaeb1379977aa22ca9
 
-PKG_MAINTAINER:=
+PKG_MAINTAINER:=Tianling Shen <cnsztl@immortalwrt.org>
 PKG_LICENSE:=MPL-2.0
 PKG_LICENSE_FILES:=LICENSE
 
@@ -31,7 +31,7 @@ define Package/xray/template
   TITLE:=A platform for building proxies to bypass network restrictions
   SECTION:=net
   CATEGORY:=Network
-  URL:=https://xray.sh
+  URL:=https://xtls.github.io
 endef
 
 define Package/xray-core
@@ -80,24 +80,24 @@ define Package/xray-core/conffiles
 /etc/config/xray
 endef
 
-GEOIP_VER:=202102110014
+GEOIP_VER:=202103110015
 GEOIP_FILE:=geoip.dat.$(GEOIP_VER)
 
 define Download/geoip
   URL:=https://github.com/v2fly/geoip/releases/download/$(GEOIP_VER)/
   URL_FILE:=geoip.dat
   FILE:=$(GEOIP_FILE)
-  HASH:=c80e61b251fd76b09df5624b12cc84d7e1d9a0492b9acb43e21f0a244b1f9fc3
+  HASH:=8d2e8beaafd9aa07fce4900cc079cddf873d24658d1874de53417df33ab7f4b3
 endef
 
-GEOSITE_VER:=20210211141342
+GEOSITE_VER:=20210314064711
 GEOSITE_FILE:=dlc.dat.$(GEOSITE_VER)
 
 define Download/geosite
   URL:=https://github.com/v2fly/domain-list-community/releases/download/$(GEOSITE_VER)/
   URL_FILE:=dlc.dat
   FILE:=$(GEOSITE_FILE)
-  HASH:=e71b4acf2918851dd56e7cda714abb4758deb57b91d716911f33c453b909e796
+  HASH:=8b89b59b0a826cb24d6b18a4e5e1db2b990faa8a9a8fef0eb000a692a7cbf7bb
 endef
 
 define Build/Prepare
