@@ -331,6 +331,12 @@ reload_service() {
 	start
 }
 
+stop_service() {
+	ipsec_reset
+	swan_reset
+	secret_reset
+}
+
 check_ipsec_interface() {
 	local intf
 
@@ -347,6 +353,8 @@ service_triggers() {
 
 start_service() {
 	prepare_env
+
+	warning "Strongswan is deprecating the ipsec CLI; please migrate to swanctl."
 
 	[ $WAIT_FOR_INTF -eq 1 ] && return
 
