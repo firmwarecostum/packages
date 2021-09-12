@@ -9,7 +9,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=libupm
 PKG_VERSION:=2.0.0
-PKG_RELEASE:=5
+PKG_RELEASE:=6
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://codeload.github.com/intel-iot-devkit/upm/tar.gz/v$(PKG_VERSION)?
@@ -26,7 +26,7 @@ PKG_USE_MIPS16:=0
 PYTHON3_PKG_BUILD:=0
 
 include $(INCLUDE_DIR)/package.mk
-include ../../devel/ninja/ninja-cmake.mk
+include $(INCLUDE_DIR)/cmake.mk
 include ../../lang/python/python3-package.mk
 
 UPM_MODULES:= \
@@ -54,6 +54,7 @@ UPM_MODULES:= \
 
 CMAKE_OPTIONS += \
 	-DBUILDSWIGNODE=OFF \
+	-DWERROR=OFF \
 	-DPYTHON2LIBS_FOUND=FALSE \
 	-DPYTHON2INTERP_FOUND=FALSE \
 

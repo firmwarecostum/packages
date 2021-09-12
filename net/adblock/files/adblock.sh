@@ -11,7 +11,7 @@
 export LC_ALL=C
 export PATH="/usr/sbin:/usr/bin:/sbin:/bin"
 set -o pipefail
-adb_ver="4.1.2"
+adb_ver="4.1.3"
 adb_enabled=0
 adb_debug=0
 adb_forcedns=0
@@ -54,6 +54,7 @@ adb_repiface=""
 adb_replisten="53"
 adb_repchunkcnt="5"
 adb_repchunksize="1"
+adb_represolve="0"
 adb_lookupdomain="example.com"
 adb_action="${1:-"start"}"
 adb_packages=""
@@ -459,7 +460,7 @@ f_dns()
 #
 f_fetch()
 {
-	local util utils cnt=0
+	local util utils insecure cnt=0
 
 	if [ -z "${adb_fetchutil}" ]
 	then
@@ -485,16 +486,32 @@ f_fetch()
 	fi
 	case "${adb_fetchutil}" in
 		"aria2c")
-			adb_fetchparm="${adb_fetchparm:-"--timeout=20 --allow-overwrite=true --auto-file-renaming=false --check-certificate=true --log-level=warn --dir=/ -o"}"
+			if [ "${adb_fetchinsecure}" = "1" ]
+			then
+				insecure="--check-certificate=false"
+			fi
+			adb_fetchparm="${adb_fetchparm:-"${insecure} --timeout=20 --allow-overwrite=true --auto-file-renaming=false --log-level=warn --dir=/ -o"}"
 		;;
 		"curl")
-			adb_fetchparm="${adb_fetchparm:-"--connect-timeout 20 --silent --show-error --location -o"}"
+			if [ "${adb_fetchinsecure}" = "1" ]
+			then
+				insecure="--insecure"
+			fi
+			adb_fetchparm="${adb_fetchparm:-"${insecure} --connect-timeout 20 --silent --show-error --location -o"}"
 		;;
 		"uclient-fetch")
-			adb_fetchparm="${adb_fetchparm:-"--timeout=20 -O"}"
+			if [ "${adb_fetchinsecure}" = "1" ]
+			then
+				insecure="--no-check-certificate"
+			fi
+			adb_fetchparm="${adb_fetchparm:-"${insecure} --timeout=20 -O"}"
 		;;
 		"wget")
-			adb_fetchparm="${adb_fetchparm:-"--no-cache --no-cookies --max-redirect=0 --timeout=20 -O"}"
+			if [ "${adb_fetchinsecure}" = "1" ]
+			then
+				insecure="--no-check-certificate"
+			fi
+			adb_fetchparm="${adb_fetchparm:-"${insecure} --no-cache --no-cookies --max-redirect=0 --timeout=20 -O"}"
 		;;
 	esac
 	if [ -n "${adb_fetchutil}" ] && [ -n "${adb_fetchparm}" ]
@@ -899,7 +916,7 @@ f_list()
 		"safesearch")
 			case "${src_name}" in
 				"google")
-					rset="/^(\\.[[:alnum:]_-]{1,63}\\.)+[[:alpha:]]+([[:space:]]|$)/{printf \"%s\n%s\n\",tolower(\"www\"\$1),tolower(substr(\$1,2,length(\$1)))}"
+					rset="/^\\.([[:alnum:]_-]{1,63}\\.)+[[:alpha:]]+([[:space:]]|$)/{printf \"%s\n%s\n\",tolower(\"www\"\$1),tolower(substr(\$1,2,length(\$1)))}"
 					safe_url="https://www.google.com/supported_domains"
 					safe_cname="forcesafesearch.google.com"
 					safe_domains="${adb_tmpdir}/tmp.load.safesearch.${src_name}"
@@ -1637,7 +1654,7 @@ f_main()
 #
 f_report()
 {
-	local report_raw report_json report_txt content status total start end blocked percent top_list top array item index hold ports value key key_list cnt=0 action="${1}" count="${2:-"50"}" search="${3:-"+"}"
+	local report_raw report_json report_txt content status total start end blocked percent top_list top array item index hold ports value key key_list cnt=0 resolve="-nn" action="${1}" count="${2:-"50"}" search="${3:-"+"}"
 
 	report_raw="${adb_reportdir}/adb_report.raw"
 	report_srt="${adb_reportdir}/adb_report.srt"
@@ -1652,10 +1669,14 @@ f_report()
 		> "${report_srt}"
 		> "${report_txt}"
 		> "${report_jsn}"
+		if [ "${adb_represolve}" = "1" ]
+		then
+			resolve=""
+		fi
 		for file in "${adb_reportdir}/adb_report.pcap"*
 		do
 			(
-				"${adb_dumpcmd}" -nn -tttt -r "${file}" 2>/dev/null | \
+				"${adb_dumpcmd}" "${resolve}" -tttt -r "${file}" 2>/dev/null | \
 					"${adb_awk}" -v cnt="${cnt}" '!/\.lan\. |PTR\? | SOA\? /&&/ A[\? ]+|NXDomain|0\.0\.0\.0/{a=$1;b=substr($2,0,8);c=$4;sub(/\.[0-9]+$/,"",c);gsub(/[^[:alnum:]\.:-]/,"",c);d=cnt $7;sub(/\*$/,"",d);
 					e=$(NF-1);sub(/[0-9]\/[0-9]\/[0-9]|0\.0\.0\.0/,"NX",e);sub(/\.$/,"",e);sub(/([0-9]{1,3}\.){3}[0-9]{1,3}/,"OK",e);gsub(/[^[:alnum:]\.-]/,"",e);if(e==""){e="err"};printf "%s\t%s\t%s\t%s\t%s\n",d,e,a,b,c}' >> "${report_raw}"
 			)&
@@ -1794,7 +1815,7 @@ f_report()
 		( "${adb_mailservice}" "${adb_ver}" "${content}" >/dev/null 2>&1 )&
 		bg_pid="${!}"
 	fi
-	f_log "debug" "f_report ::: action: ${action}, count: ${count}, search: ${search}, dump_util: ${adb_dumpcmd}, rep_dir: ${adb_reportdir}, rep_iface: ${adb_repiface:-"-"}, rep_listen: ${adb_replisten}, rep_chunksize: ${adb_repchunksize}, rep_chunkcnt: ${adb_repchunkcnt}"
+	f_log "debug" "f_report ::: action: ${action}, count: ${count}, search: ${search}, dump_util: ${adb_dumpcmd}, rep_dir: ${adb_reportdir}, rep_iface: ${adb_repiface:-"-"}, rep_listen: ${adb_replisten}, rep_chunksize: ${adb_repchunksize}, rep_chunkcnt: ${adb_repchunkcnt}, rep_resolve: ${adb_represolve}"
 }
 
 # source required system libraries
