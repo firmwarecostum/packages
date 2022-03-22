@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=libmbim
-PKG_VERSION:=1.26.0
+PKG_VERSION:=1.26.2
 PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.xz
 PKG_SOURCE_URL:=https://www.freedesktop.org/software/libmbim
-PKG_HASH:=1e1f0926b22c77210442129eca689722ecf324ab9c9abf421a5c989f46e813cf
+PKG_HASH:=10c77bf5b5eb8c92ba80e9b519923ad9b898362bc8e1928e2bc9a17eeba649af
 
 PKG_MAINTAINER:=Nicholas Smith <nicholas@nbembedded.com>
 
@@ -28,8 +28,7 @@ CONFIGURE_ARGS += \
 	--disable-gtk-doc \
 	--disable-gtk-doc-html \
 	--disable-gtk-doc-pdf \
-	--disable-silent-rules \
-	--enable-more-warnings=yes
+	--disable-silent-rules
 
 define Package/libmbim
   SECTION:=libs
@@ -57,7 +56,6 @@ define Package/mbim-utils
 endef
 
 CONFIGURE_ARGS += \
-	--without-udev \
 	--without-udev-base-dir
 
 define Build/InstallDev
