@@ -11,12 +11,12 @@ include $(TOPDIR)/rules.mk
 include ../python3-version.mk
 
 PKG_NAME:=python3
-PKG_RELEASE:=1
+PKG_RELEASE:=2
 PKG_VERSION:=$(PYTHON3_VERSION).$(PYTHON3_VERSION_MICRO)
 
 PKG_SOURCE:=Python-$(PKG_VERSION).tar.xz
 PKG_SOURCE_URL:=https://www.python.org/ftp/python/$(PKG_VERSION)
-PKG_HASH:=80bf925f571da436b35210886cf79f6eb5fa5d6c571316b73568343451f77a19
+PKG_HASH:=8437efd5b106ef0a75aabfbf23d880625120a73a86a22ade4d2e2e68d7b74486
 
 PKG_MAINTAINER:=Jeffery To <jeffery.to@gmail.com>
 PKG_LICENSE:=PSF-2.0
@@ -326,10 +326,6 @@ HOST_CONFIGURE_VARS += \
 HOST_MAKE_VARS += \
 	USE_PYTHON_CONFIG_PY=1
 endif
-
-# FIXME: remove when removing patch '028-host-python-support-ssl-with-libressl.patch'
-HOST_CFLAGS += \
-	-DOPENWRT_HOST_BUILD
 
 HOST_CONFIGURE_ARGS+= \
 	--enable-optimizations \
