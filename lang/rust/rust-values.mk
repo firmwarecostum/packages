@@ -5,7 +5,7 @@
 # Rust Environmental Vars
 CONFIG_HOST_SUFFIX:=$(word 4, $(subst -, ,$(GNU_HOST_NAME)))
 RUSTC_HOST_ARCH:=$(HOST_ARCH)-unknown-linux-$(CONFIG_HOST_SUFFIX)
-CARGO_HOME:=$(STAGING_DIR_HOSTPKG)/cargo
+CARGO_HOME:=$(STAGING_DIR)/host/cargo
 CARGO_VARS:=
 
 ifeq ($(CONFIG_USE_MUSL),y)
@@ -33,6 +33,8 @@ RUSTC_TARGET_ARCH:=$(subst muslgnueabi,musleabi,$(RUSTC_TARGET_ARCH))
 
 ifeq ($(ARCH),i386)
   RUSTC_TARGET_ARCH:=$(subst i486,i586,$(RUSTC_TARGET_ARCH))
+else ifeq ($(ARCH),riscv64)
+  RUSTC_TARGET_ARCH:=$(subst riscv64,riscv64gc,$(RUSTC_TARGET_ARCH))
 endif
 
 # ARM Logic

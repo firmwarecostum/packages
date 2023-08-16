@@ -8,11 +8,11 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=python-hatchling
-PKG_VERSION:=1.14.1
+PKG_VERSION:=1.18.0
 PKG_RELEASE:=1
 
 PYPI_NAME:=hatchling
-PKG_HASH:=55fbc88cbd0d96c09c3e9392b51db513fd4cb4caf47615d65f935a5ef1756133
+PKG_HASH:=50e99c3110ce0afc3f7bdbadff1c71c17758e476731c27607940cfa6686489ca
 
 PKG_LICENSE:=MIT
 PKG_LICENSE_FILES:=LICENSE.txt
@@ -27,7 +27,6 @@ HOST_BUILD_DEPENDS:= \
 	python-packaging/host \
 	python-pathspec/host \
 	python-pluggy/host \
-	python-tomli/host \
 	python-trove-classifiers/host
 
 include ../pypi.mk
@@ -49,7 +48,6 @@ define Package/python3-hatchling
       +python3-packaging \
       +python3-pathspec \
       +python3-pluggy \
-      +python3-tomli \
       +python3-trove-classifiers
   BUILDONLY:=1
 endef
