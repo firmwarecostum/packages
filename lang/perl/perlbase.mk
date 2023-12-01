@@ -542,9 +542,9 @@ DEPENDS+=+perlbase-config
 endef
 
 define Package/perlbase-essential/install
-$(call perlmod/Install,$(1),Carp Carp.pm Exporter Exporter.pm constant.pm deprecate.pm lib.pm builtin.pm locale.pm overload.pm overloading.pm parent.pm strict.pm subs.pm vars.pm vmsish.pm warnings warnings.pm,)
+$(call perlmod/Install,$(1),Carp Carp.pm Exporter Exporter.pm constant.pm deprecate.pm lib.pm locale.pm overload.pm overloading.pm parent.pm strict.pm subs.pm vars.pm vmsish.pm warnings warnings.pm,)
 $(call perlmod/Install/NoStrip,$(1),overload/numbers.pm,)
-$(call perlmod/InstallBaseTests,$(1),cpan/parent/t dist/Carp/t dist/Exporter/t dist/constant/t dist/lib/t lib/builtin.t lib/locale.t lib/overload.t lib/overload64.t lib/overloading.t lib/strict.t lib/subs.t lib/vars.t lib/vars_carp.t lib/vmsish.t lib/warnings.t)
+$(call perlmod/InstallBaseTests,$(1),cpan/parent/t dist/Carp/t dist/Exporter/t dist/constant/t dist/lib/t lib/locale.t lib/overload.t lib/overload64.t lib/overloading.t lib/strict.t lib/subs.t lib/vars.t lib/vars_carp.t lib/vmsish.t lib/warnings.t)
 endef
 
 $(eval $(call BuildPackage,perlbase-essential))
