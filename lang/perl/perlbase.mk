@@ -557,7 +557,7 @@ DEPENDS+=+perlbase-essential +perlbase-feature +perlbase-version
 endef
 
 define Package/perlbase-experimental/install
-$(call perlmod/Install,$(1),experimental.pm stable.pm,)
+$(call perlmod/Install,$(1),experimental.pm,)
 $(call perlmod/InstallBaseTests,$(1),cpan/experimental/t)
 endef
 
