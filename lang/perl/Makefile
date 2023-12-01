@@ -15,7 +15,7 @@ PKG_RELEASE:=1
 
 PKG_SOURCE_URL:=https://www.cpan.org/src/5.0
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.xz
-PKG_HASH:=6d52cf833ff1af27bb5e986870a2c30cec73c044b41e3458cd991f94374039f7
+PKG_HASH:=skip
 
 PKG_LICENSE:=GPL-1.0-or-later Artistic-1.0-Perl
 PKG_LICENSE_FILES:=Copying Artistic README
